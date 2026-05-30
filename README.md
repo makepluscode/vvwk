@@ -1,12 +1,40 @@
-# llm-wiki
+# Vivo Wiki (VVWK)
 
-An agent-maintained personal knowledge base for Claude Code. Drop in source documents, and Claude ingests, queries, lints, and visualizes your knowledge — no API key or Python scripts required.
+A living knowledge base maintained by AI agents.
+Drop in source documents — agents ingest, connect, query, and visualize your knowledge so it stays alive and in circulation.
 
-> 한국어 가이드: [README.ko.md](README.ko.md)
+> *Vivo* — alive. Knowledge that grows, links, and flows rather than sitting static in files.
 
 ```
-ingest → query → lint → graph
+ingest → query → synthesize → lint → graph
 ```
+
+---
+
+## What It Is
+
+**Vivo Wiki** is an agent-maintained personal knowledge base framework.
+It automates the full lifecycle of knowledge management:
+
+1. **Ingest** — Convert raw documents into structured wiki pages, extracting entities and concepts
+2. **Query** — Synthesize answers across multiple pages with wikilink citations
+3. **Synthesize** — Save query answers as reusable synthesis pages
+4. **Lint** — Health-check for broken links, orphans, contradictions, and stale content
+5. **Graph** — Visualize the knowledge network as an interactive HTML graph
+
+---
+
+## Supported Agents
+
+Works with any AI coding agent out of the box:
+
+| File | Agent |
+|------|-------|
+| `AGENTS.md` | Codex, Copilot, and other general-purpose agents |
+| `CLAUDE.md` | Claude Code (`claude` CLI) |
+| `CURSOR.md` + `.cursor/rules/` | Cursor |
+| `CODEX.md` | OpenAI Codex CLI |
+| `GEMINI.md` | Gemini CLI |
 
 ---
 
@@ -15,33 +43,21 @@ ingest → query → lint → graph
 ### Using npx (recommended)
 
 ```bash
-npx skills add godstale/llm-wiki
-```
-
-This installs the skill to your global Claude Code skills directory (`~/.claude/skills/llm-wiki`).
-
-To install at project level instead:
-
-```bash
-npx skills add godstale/llm-wiki --project
-```
-
-### Manual installation
-
-```bash
-# Global (available in all projects)
-cp -r llm-wiki ~/.claude/skills/llm-wiki
+# Global — available across all projects
+npx skills add makepluscode/vvwk
 
 # Project-level
-cp -r llm-wiki .agents/skills/llm-wiki
+npx skills add makepluscode/vvwk --project
 ```
 
-### Python dependencies (optional)
-
-Required only for the `lint.py` and `build_graph.py` scripts. The agent-based fallback works without them.
+### Manual
 
 ```bash
-pip install -r ~/.claude/skills/llm-wiki/scripts/requirements.txt
+# Global
+cp -r vvwk ~/.claude/skills/vvwk
+
+# Project-level
+cp -r vvwk .agents/skills/vvwk
 ```
 
 ---
@@ -64,13 +80,13 @@ wiki/
 graph/            # Auto-generated graph data (graph.json, graph.html)
 ```
 
-You only need to create `raw/` and `wiki/` to start. Subdirectories are created automatically during ingest.
+Only `raw/` and `wiki/` need to be created manually. Subdirectories are created automatically during ingest.
 
 ---
 
-## Usage
+## Commands
 
-All commands work as slash commands or natural language in Claude Code.
+All commands work as slash commands or natural language.
 
 ### Ingest a document
 
@@ -78,13 +94,9 @@ All commands work as slash commands or natural language in Claude Code.
 /wiki-ingest raw/my-article.md
 ```
 
-- Reads the source file
-- Creates a summary page in `wiki/sources/`
-- Extracts and creates entity and concept pages
-- Moves the original to `wiki/originals/`
-- Updates `wiki/index.md` and `wiki/overview.md`
+Reads the source, creates a summary in `wiki/sources/`, extracts entities and concepts, archives the original, and updates `wiki/index.md` and `wiki/overview.md`.
 
-**Supported file types:** `.md`, `.txt`. For `.pdf`, `.docx`, `.pptx`, `.xlsx` — place the file in `raw/` and Claude will convert it automatically (requires the `pdf`, `docx`, `pptx`, or `xlsx` skill, or the `file_to_markdown.py` script as fallback).
+**Supported formats:** `.md`, `.txt`, `.pdf`, `.docx`, `.pptx`, `.xlsx`
 
 ### Query the knowledge base
 
@@ -92,9 +104,15 @@ All commands work as slash commands or natural language in Claude Code.
 /wiki-query what are the main themes across all sources?
 ```
 
-- Reads the index to find relevant pages
-- Synthesizes a markdown answer with `[[wikilink]]` citations
-- Offers to save the answer as a synthesis page in `wiki/syntheses/`
+Synthesizes a markdown answer with `[[wikilink]]` citations from across the wiki.
+
+### Save a synthesis
+
+```
+/wiki-synthesize
+```
+
+Saves the most recent query answer as a page in `wiki/syntheses/`.
 
 ### Lint the wiki
 
@@ -102,21 +120,11 @@ All commands work as slash commands or natural language in Claude Code.
 /wiki-lint
 ```
 
-Checks for:
-- Orphan pages (no inbound links)
-- Broken `[[wikilinks]]`
-- Missing entity pages (mentioned 3+ times, no dedicated page)
-- Contradictions between sources
-- Stale summaries
-- Data gaps
+Checks for orphan pages, broken wikilinks, missing entity pages, contradictions, stale summaries, and data gaps.
 
-Option A — Python script (structural + graph-aware):
 ```bash
-python scripts/lint.py
 python scripts/lint.py --save   # save report to wiki/lint-report.md
 ```
-
-Option B — Agent-based (no Python needed): just run `/wiki-lint`.
 
 ### Build the knowledge graph
 
@@ -124,17 +132,11 @@ Option B — Agent-based (no Python needed): just run `/wiki-lint`.
 /wiki-graph
 ```
 
-Generates an interactive HTML visualization of all wiki pages and their wikilink connections.
+Generates `graph/graph.html` — a self-contained, interactive vis.js visualization of all pages and their connections.
 
-Option A — Python script (preferred):
 ```bash
 python scripts/build_graph.py --open
-python scripts/build_graph.py --report --save
 ```
-
-Outputs `graph/graph.json` and `graph/graph.html`, then opens in the browser.
-
-Option B — Agent-based fallback: runs automatically when Python is unavailable.
 
 ---
 
@@ -152,12 +154,12 @@ last_updated: YYYY-MM-DD
 ---
 ```
 
-Use `[[PageName]]` wikilinks to link to other wiki pages.
+Use `[[PageName]]` wikilinks to link between pages.
 
 ### Naming conventions
 
-| Type | File location | Naming |
-|------|--------------|--------|
+| Type | Location | Naming |
+|------|----------|--------|
 | Source | `wiki/sources/` | `kebab-case.md` |
 | Entity | `wiki/entities/` | `TitleCase.md` |
 | Concept | `wiki/concepts/` | `TitleCase.md` |
@@ -165,47 +167,49 @@ Use `[[PageName]]` wikilinks to link to other wiki pages.
 
 ---
 
-## Natural language triggers
+## Agent Memory & Rules
 
-You don't have to use slash commands. Claude also responds to:
+```
+.agents/
+  rules/
+    coding-standards.md   # Code style (auto-loaded by file pattern)
+    git-workflow.md       # Commit conventions, branching strategy
+  memory/
+    context.md            # Project goals and current status
+    history.md            # Major task and decision log
+    error_fixes.md        # Recurring errors and fixes (Gotchas)
+```
 
-- *"ingest raw/my-article.md"*
-- *"query: what are the main themes?"*
-- *"lint the wiki"*
-- *"build the knowledge graph"*
+Edit `.agents/memory/context.md` to define your project's goals and keep agents aligned across sessions.
 
 ---
 
-## Utilities
+## Included Skills
 
-Convert non-markdown files to `.md` before ingesting:
-
-```bash
-python scripts/file_to_markdown.py --input_dir raw/
-```
+| Skill | Purpose |
+|-------|---------|
+| `brainstorming` | Explore design before implementation |
+| `writing-plans` | Plan before touching code |
+| `executing-plans` | Execute plans with review checkpoints |
+| `test-driven-development` | Tests before implementation |
+| `systematic-debugging` | Root-cause analysis before fixes |
+| `subagent-driven-development` | Parallel in-session task execution |
+| `dispatching-parallel-agents` | Dispatch independent tasks to parallel agents |
+| `grill-me` | Stress-test a plan |
+| `grill-with-docs` | Validate plan against project domain model |
+| `llm-wiki` | Core wiki skill (ingest / query / lint / graph) |
+| `vercel-react-best-practices` | React / Next.js performance patterns |
 
 ---
 
 ## Gotchas
 
-- **`raw/` is a drop zone** — files are moved to `wiki/originals/` after ingest; only unprocessed files remain
-- **Never modify `wiki/originals/`** — read-only archive of source documents
-- **Always keep `wiki/index.md` up to date** — stale index breaks `/wiki-query`
+- **`raw/` is a drop zone** — files move to `wiki/originals/` after ingest
+- **Never modify `wiki/originals/`** — read-only archive
+- **Keep `wiki/index.md` current** — stale index breaks `/wiki-query`
 - **Wikilinks are case-sensitive** — `[[OpenAI]]` ≠ `[[Openai]]`
-- **Source slugs must match filenames** — the slug in `sources:` frontmatter must equal the source `.md` filename without extension
 - **`wiki/log.md` is append-only** — never edit past entries
-- **Scripts run from project root** — `python scripts/build_graph.py` must be run from your wiki project directory
-
----
-
-## Extensions
-
-### WiKi-Hub
-
-You can merge other people's wikis into your current project using the **WiKi-Hub** skill. This allows for seamless knowledge sharing and collaboration across different wiki repositories.
-
-- **GitHub Repository:** [godstale/WiKi-Hub](https://github.com/godstale/WiKi-Hub)
-- **Installation:** `npx skills add godstale/wiki-hub`
+- **Scripts run from project root** — `python scripts/build_graph.py` must run from your wiki project directory
 
 ---
 
