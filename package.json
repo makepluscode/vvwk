@@ -1,0 +1,10 @@
+{
+  "name": "vvwk-skills",
+  "version": "1.0.0",
+  "description": "Vivo Wiki — agent-maintained living knowledge base",
+  "scripts": {
+    "install-skills": "node scripts/install-skills.js",
+    "install-skills:agents": "node scripts/install-skills.js --target .agents/skills"
+  },
+  "license": "MIT"
+}

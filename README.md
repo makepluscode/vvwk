@@ -1,4 +1,4 @@
-# Vivo Wiki (VVWK)
+# vvwk-skills — Vivo Wiki (VVWK)
 
 A living knowledge base maintained by AI agents.
 Drop in source documents — agents ingest, connect, query, and visualize your knowledge so it stays alive and in circulation.
@@ -40,25 +40,24 @@ Works with any AI coding agent out of the box:
 
 ## Installation
 
-### Using npx (recommended)
+### Clone and install skills
 
 ```bash
-# Global — available across all projects
-npx skills add makepluscode/vvwk
-
-# Project-level
-npx skills add makepluscode/vvwk --project
+git clone https://github.com/makepluscode/vvwk-skills.git
+cd vvwk-skills
+node scripts/install-skills.js                        # → .claude/skills/
+node scripts/install-skills.js --target .agents/skills  # → .agents/skills/
 ```
 
-### Manual
+Or with npm:
 
 ```bash
-# Global
-cp -r vvwk ~/.claude/skills/vvwk
-
-# Project-level
-cp -r vvwk .agents/skills/vvwk
+npm run install-skills
+npm run install-skills:agents
 ```
+
+> `scripts/install-skills.js` reads `skills-lock.json` directly and sparse-clones
+> only the required directories from each source repo — no manual steps needed.
 
 ---
 
